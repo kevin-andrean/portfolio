@@ -9,7 +9,7 @@ const content = {
     intro: 'Software developer with 7+ years of professional experience, plus freelance work since 2015, across web and game development. I deliver client integrations in JavaScript, build games in Unity3D (C#) and Unreal Engine (C++), and recently built AI-powered Python tools.',
     location: 'Surabaya, East Java, Indonesia',
     badge: 'Open to new opportunities',
-    email: 'hello@example.com',
+    email: 'kevinandrean.h@gmail.com',
     github: 'https://github.com/kevin-andrean',
     linkedin: '',
     heroSymbol: '</>',
