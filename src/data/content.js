@@ -159,7 +159,7 @@ const content = {
       images: ['images/projects/vt-the-lost-lamb/banners/1024x500.png', 'images/projects/vt-the-lost-lamb/screenshots/1.png', 'images/projects/vt-the-lost-lamb/screenshots/3.png', 'images/projects/vt-the-lost-lamb/screenshots/6.png'],
       overview: 'A 3D puzzle game where players help a lost lamb find its way back to its father.',
       role: 'Game designer and developer.',
-      built: ['Game project in Unity3D (C#)'],
+      built: ['Game project in Unity3D (C#)', 'Online Leaderboard', 'In-app purchase system', 'Ad network integration'],
       links: {
         live: 'images/projects/vt-the-lost-lamb/demo/index.html'
       },
