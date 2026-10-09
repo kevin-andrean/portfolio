@@ -88,7 +88,7 @@ function Hero() {
       <div className="hero-inner page-width">
         <div className="hero-copy">
           <div className="availability"><span className="availability-dot" />{content.profile.badge}</div>
-          <h1>{content.profile.name}</h1>
+          <h1>{content.profile.headline}</h1>
           <p className="hero-title">{content.profile.title}</p>
           <p className="hero-intro">{content.profile.intro}</p>
           <p className="hero-location"><MapPin size={17} aria-hidden="true" />{content.profile.location}</p>
@@ -98,12 +98,10 @@ function Hero() {
             <a className="icon-button" href={content.profile.github} target="_blank" rel="noreferrer" aria-label={content.labels.openGithub}><Github size={19} /></a>
           </div>
         </div>
-        <div className="hero-art" aria-hidden="true">
-          <div className="art-orbit orbit-one" />
-          <div className="art-orbit orbit-two" />
-          <div className="art-core"><span>{content.profile.heroSymbol}</span><i /><i /><i /></div>
-          {content.profile.visualLabels.map((label, index) => <div className={`art-label label-${['web', 'game', 'ai'][index]}`} key={label}>{label}</div>)}
-          <div className="art-spark spark-one" /><div className="art-spark spark-two" />
+        <div className="hero-art terminal-art">
+          <div className="terminal-bar"><i /><i /><i /><span>integration.js</span><span className="terminal-status">PATTERN / 01</span></div>
+          <pre><code><span className="code-line-number">01</span><span className="code-comment">// client integration</span>{'\n'}<span className="code-line-number">02</span><span className="code-keyword">const</span> game = {'{'}{'\n'}<span className="code-line-number">03</span>  platform: <span className="code-string">&apos;web&apos;</span>,{'\n'}<span className="code-line-number">04</span>  events: [<span className="code-string">&apos;load&apos;</span>, <span className="code-string">&apos;play&apos;</span>, <span className="code-string">&apos;finish&apos;</span>],{'\n'}<span className="code-line-number">05</span>{'}'}{'\n'}<span className="code-line-number">06</span><span className="code-keyword">await</span> client.ready(game)</code></pre>
+          <div className="terminal-proof"><span className="terminal-proof-dot" /><span>Reusable client integrations</span><strong>100+</strong><span>delivered</span></div>
         </div>
       </div>
       <div className="hero-rule page-width"><span /><span /><span /></div>
@@ -183,6 +181,10 @@ function projectImage(path) {
   return `${import.meta.env.BASE_URL}${path}`
 }
 
+function projectImageStyle(project, index = 0) {
+  return { objectPosition: project.imagePositions?.[index] ?? 'center' }
+}
+
 function ProjectLinks({ project }) {
   return (
     <div className="project-links" aria-label={content.labels.projectLinks}>
@@ -247,17 +249,6 @@ function IntegrationsSection() {
             ))}
           </div>
         </div>
-        <div className="selected-integrations">
-          <h3>{content.labels.selectedIntegrations}</h3>
-          <div className="integration-slots">
-            {content.integrations.selected.map((slot, index) => (
-              <div className="integration-slot" key={index} aria-label={slot.title}>
-                <span className="slot-mark" aria-hidden="true" />
-                <span>{slot.title}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   )
@@ -283,7 +274,7 @@ function ProjectsSection() {
             <article className="project-card" key={project.slug}>
               <Link className="project-card-main" to={`/projects/${project.slug}`} aria-label={`${content.labels.projectDetails}: ${project.title}`}>
                 <div className="project-image-wrap">
-                  <img src={projectImage(project.images[0])} alt={`${project.title} - ${content.labels.imagePlaceholder}`} loading="lazy" />
+                  <img src={projectImage(project.images[0])} alt={`${project.title} - ${content.labels.imagePlaceholder}`} loading="lazy" style={projectImageStyle(project)} />
                   {project.placeholder && <span className="placeholder-label">{content.labels.placeholder}</span>}
                   <span className="project-open" aria-hidden="true"><ArrowUpRight size={18} /></span>
                 </div>
@@ -309,17 +300,34 @@ function ProjectDetailPage() {
   const navigate = useNavigate()
   const project = content.projects.find((item) => item.slug === slug)
   const imageDialog = useRef(null)
-  const [activeImage, setActiveImage] = useState(null)
+  const [activeImageIndex, setActiveImageIndex] = useState(null)
   const projectIndex = content.projects.findIndex((item) => item.slug === slug)
 
   useEffect(() => {
     window.scrollTo(0, 0)
+    imageDialog.current?.close()
+    setActiveImageIndex(null)
   }, [slug])
   useScrollReveal()
 
-  function openImage(path) {
-    setActiveImage(path)
+  function openImage(index) {
+    setActiveImageIndex(index)
     imageDialog.current?.showModal()
+  }
+
+  function navigateImage(event) {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      imageDialog.current?.close()
+      return
+    }
+    if (project.images.length < 2 || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')) return
+    event.preventDefault()
+    setActiveImageIndex((currentIndex) => {
+      const index = currentIndex ?? 0
+      const direction = event.key === 'ArrowRight' ? 1 : -1
+      return (index + direction + project.images.length) % project.images.length
+    })
   }
 
   function backToProjects(event) {
@@ -343,13 +351,13 @@ function ProjectDetailPage() {
           <h1>{project.title}</h1>
           <p>{project.description}</p>
         </header>
-        <button className="detail-hero-image image-button" type="button" onClick={() => openImage(project.images[0])} aria-label={`${content.labels.enlargeImage}: ${project.title}`}>
-          <img src={projectImage(project.images[0])} alt={`${project.title} - ${content.labels.imagePlaceholder}`} loading="lazy" />
+        <button className="detail-hero-image image-button" type="button" onClick={() => openImage(0)} aria-label={`${content.labels.enlargeImage}: ${project.title}`}>
+          <img src={projectImage(project.images[0])} alt={`${project.title} - ${content.labels.imagePlaceholder}`} loading="lazy" style={projectImageStyle(project)} />
         </button>
         <section className="detail-gallery" aria-label={content.labels.projectGallery}>
           {project.images.slice(1).map((image, index) => (
-            <button className="image-button gallery-image" key={image} type="button" onClick={() => openImage(image)} aria-label={`${content.labels.enlargeImage}: ${project.title} ${index + 2}`}>
-              <img src={projectImage(image)} alt={`${project.title} ${index + 2} - ${content.labels.imagePlaceholder}`} loading="lazy" />
+            <button className="image-button gallery-image" key={image} type="button" onClick={() => openImage(index + 1)} aria-label={`${content.labels.enlargeImage}: ${project.title} ${index + 2}`}>
+              <img src={projectImage(image)} alt={`${project.title} ${index + 2} - ${content.labels.imagePlaceholder}`} loading="lazy" style={projectImageStyle(project, index + 1)} />
             </button>
           ))}
         </section>
@@ -372,9 +380,26 @@ function ProjectDetailPage() {
           {previousProject ? <Link to={`/projects/${previousProject.slug}`}><ArrowLeft size={17} /><span><small>{content.labels.previousProject}</small>{previousProject.title}</span></Link> : <span />}
           {nextProject && <Link className="next-project" to={`/projects/${nextProject.slug}`}><span><small>{content.labels.nextProject}</small>{nextProject.title}</span><ArrowRight size={17} /></Link>}
         </nav>
-        <dialog className="image-dialog" ref={imageDialog} aria-label={`${project.title} ${content.labels.projectGallery}`} onClose={() => setActiveImage(null)}>
+        <dialog className="image-dialog" ref={imageDialog} aria-label={`${project.title} ${content.labels.projectGallery}`} onClose={() => setActiveImageIndex(null)} onKeyDown={navigateImage}>
           <button className="dialog-close" type="button" aria-label={content.labels.closeImage} onClick={() => imageDialog.current?.close()}><X size={20} /></button>
-          {activeImage && <img src={projectImage(activeImage)} alt={`${project.title} - ${content.labels.imagePlaceholder}`} />}
+          {activeImageIndex !== null && (
+            <>
+              <div className="image-dialog-stage">
+                {project.images.length > 1 && (
+                  <button className="dialog-navigation" type="button" aria-label={content.labels.previousImage} onClick={() => setActiveImageIndex((activeImageIndex - 1 + project.images.length) % project.images.length)}>
+                    <ArrowLeft size={22} />
+                  </button>
+                )}
+                <img src={projectImage(project.images[activeImageIndex])} alt={`${project.title} ${activeImageIndex + 1} - ${content.labels.imagePlaceholder}`} draggable={false} />
+                {project.images.length > 1 && (
+                  <button className="dialog-navigation" type="button" aria-label={content.labels.nextImage} onClick={() => setActiveImageIndex((activeImageIndex + 1) % project.images.length)}>
+                    <ArrowRight size={22} />
+                  </button>
+                )}
+              </div>
+              <p className="dialog-count" aria-live="polite">{activeImageIndex + 1} / {project.images.length}</p>
+            </>
+          )}
         </dialog>
       </main>
       <Footer />
